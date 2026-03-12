@@ -6,6 +6,18 @@ from pcdet.models import build_network
 from pathlib import Path
 from easydict import EasyDict
 
+HARDCODED = False
+args = EasyDict({
+    "cfg": "./cfgs/def_224_mdl.yaml",
+    "checkpoint": "./results/04-02-wtf/latest.pth",
+    "out": "./04-01-incredible/eval",
+    "data": None,
+    "study": None,
+    "batch_size": 1,
+    "workers": 1
+})
+
+
 def main(args):
     warnings.filterwarnings("ignore", category=UserWarning) # PyTorch
     warnings.filterwarnings("ignore", category=scipy.stats.ConstantInputWarning)
@@ -96,5 +108,6 @@ def build_model(cfg, args, dataset):
 
 
 if __name__ == "__main__":
-    args = parse_args()
+    if not HARDCODED:
+        args = parse_args()
     eval_metrics, eval_predictions = main(args)

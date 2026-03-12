@@ -22,7 +22,7 @@ def evaluate_model_scores(cfg, model, dataloader):
     metrics = {}
     model.eval()
     cfg.MODEL.POST_PROCESSING.SCORE_THRESH = 0.0
-    if cfg.MODEL.NAME == "SECONDNet":
+    if cfg.MODEL.NAME in ["SECONDNet", "PillarNet"]:
         ground_truths, predictions, losses = get_data_and_loss(model, dataloader)
     elif cfg.MODEL.NAME == "PointRCNN":
         ground_truths, predictions, losses = get_point_data_and_loss(model, dataloader)
@@ -47,6 +47,7 @@ def evaluate_model_scores(cfg, model, dataloader):
     )
     tick_4 = time.perf_counter()
     metrics['eval_time'] = tick_4 - tick_1
+    # print(f"P/C/D/T: {tick_2 - tick_1:.2f} + {tick_3 - tick_2:.2f} + {tick_4 - tick_3:.2f} = {tick_4 - tick_1:.2f}")
     return predictions, metrics
 
 
@@ -110,6 +111,16 @@ def get_detection_metrics(ground_truths, predictions, confidence_thresholds, iou
                 pi = det_dict[confidence_thresholds[i]][f"precis_{typ}_{iou_t}"]
                 ap += (ri - rj) * pi
             result[f'ap_{typ}_{iou_t}'] = ap
+            """
+            ap_bad = 0
+            for i in range(len(confidence_thresholds)-1):
+                cf_curr = confidence_thresholds[i]
+                cf_next = confidence_thresholds[i+1]
+                sub_curr = result['detection_per_cf'][cf_curr]
+                sub_next = result['detection_per_cf'][cf_next]
+                ap_bad += (sub_curr[f"recall_{typ}_{iou_t}"] - sub_next[f"recall_{typ}_{iou_t}"]) * sub_curr[f"precis_{typ}_{iou_t}"]
+            result[f'apBAD_{typ}_{iou_t}'] = ap_bad
+            """
     return result
 
 
@@ -184,14 +195,22 @@ def scipy_correlation(A, B):
         return 0.0
     return result
 
+# Much faster than SciPy implementation
+# https://stackoverflow.com/a/71847068
+def pairwise_correlation(A, B):
+    if A.shape != B.shape: #
+        return 0.0
+    if np.any(A == B): # constant array input
+        return 1.0 # not likely - all prediction counts match ground truth counts
+    am = A - np.mean(A, axis=0, keepdims=True)
+    bm = B - np.mean(B, axis=0, keepdims=True)
+    return (
+        am.T @ bm / (
+            np.sqrt(np.sum(am**2, axis=0, keepdims=True)).T *
+            np.sqrt(np.sum(bm**2, axis=0, keepdims=True))
+        )
+    )[0]
 
-def get_data_only(model, dataloader):
-    ground_truths, predictions = [], []
-    for i, sample_gt in enumerate(dataloader):
-        sample_pred = make_prediction(model, sample_gt, dataloader.dataset)
-        ground_truths.append(sample_gt)
-        predictions.append(sample_pred[0])
-    return ground_truths, predictions, {}
 
 def get_data_and_loss(model, dataloader):
     ground_truths, predictions = [], []
@@ -232,6 +251,50 @@ def make_prediction(model, sample_gt, dataset):
     return dataset.generate_prediction_dicts(
         sample_gt, pred_dicts, dataset.class_names, None
     )
+
+# slow but more precise - only allows one prediction per ground truth
+# when calculating TP.
+# from munkres import Munkres
+# def iou_to_truths_munkres(iou, threshold):
+#     m = Munkres()
+#     if iou.shape[0] > iou.shape[1]:
+#         transpose = True
+#         indexes = m.compute(1 - iou.transpose())
+#     else:
+#         transpose = False
+#         indexes = m.compute(1 - iou)
+#     tp = 0
+#     if transpose:
+#         for row, column in indexes:
+#             if iou[column][row] >= threshold:
+#                 tp += 1
+#     else:
+#         for row, column in indexes:
+#             if iou[row][column] >= threshold:
+#                 tp += 1
+#     return tp, iou.shape[1]-tp, iou.shape[0]-tp
+
+# Converts the IoU matrix returned by PCDet's boxes_iou3d_gpu into the
+# absolute number of true positives, false positives, and false negatives.
+# BUGGY AND WRONG!
+# def iou_to_truths(iou, threshold):
+#     tp = 0
+#     # fp = 0
+#     fn = 0
+#     for gt in iou:
+#         if max(gt) > threshold:
+#             tp += 1
+#         else:
+#             fn += 1
+#     # Faulty calculation here!
+#     # When two predictions detect an object, one of them is a FP!
+#     # This calculation wouldn't increase FP in that case.
+#     # Also it's slower.
+#     # for pred in iou.transpose(0, 1):
+#     #     if max(pred) <= threshold:
+#     #         fp += 1
+#     fp = iou.shape[1]-tp
+#     return tp, fp, fn
 
 
 def iou_to_truths(iou, threshold):

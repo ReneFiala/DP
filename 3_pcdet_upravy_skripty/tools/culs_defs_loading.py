@@ -20,6 +20,44 @@ def ensure_determinism(seed=12345):
     torch.utils.deterministic.fill_uninitialized_memory = True
     torch.use_deterministic_algorithms(True)
 
+def load_trial_params(study, cfg):
+    params = study.best_trial.params
+    layer_nums, strides, num_filters, num_upsample_filters = [], [], [], []
+    for i in range(params["2d_length"]):
+        layer_nums.append(params[f"2d_layer_num{i}"])
+        num_filters.append(params[f"2d_filter{i}"])
+        num_upsample_filters.append(params[f"2d_upsample_filter{i}"])
+        strides.append(1)
+    strides[-1] = params["2d_last_stride"]
+    cfg.MODEL.BACKBONE_2D.LAYER_NUMS = layer_nums
+    cfg.MODEL.BACKBONE_2D.NUM_FILTERS = num_filters
+    cfg.MODEL.BACKBONE_2D.NUM_UPSAMPLE_FILTERS = num_upsample_filters
+    cfg.MODEL.BACKBONE_2D.LAYER_STRIDES = strides
+    cfg.MODEL.BACKBONE_2D.UPSAMPLE_STRIDES = strides
+    
+    anchors = []
+    for i in range(params["dense_anchor_len"]):
+        anchors.append([
+            2**params[f"dense_anchor{i}_x"],
+            2**params[f"dense_anchor{i}_y"],
+            2**params[f"dense_anchor{i}_z"],
+        ])
+    cfg.MODEL.DENSE_HEAD.ANCHOR_GENERATOR_CONFIG[0].anchor_sizes = anchors
+    
+    cfg.OPTIMIZATION.LR = params["opt_lr"]
+    cfg.OPTIMIZATION.WEIGHT_DECAY = params["opt_weight_decay"]
+    cfg.OPTIMIZATION.MOMENTUM = params["opt_momentum"]
+    # must be 2 values here!
+    cfg.OPTIMIZATION.MOMS = [
+        params["opt_moms_0"],
+        params["opt_moms_1"]
+    ]
+    cfg.OPTIMIZATION.PCT_START = params["opt_pct_start"]
+    cfg.OPTIMIZATION.DIV_FACTOR = params["opt_div_factor"]
+    cfg.OPTIMIZATION.LR_DECAY = params["opt_lr_decay"]
+    cfg.OPTIMIZATION.WARMUP_EPOCH = params["opt_warmup"]
+    cfg.OPTIMIZATION.LR_WARMUP = not (cfg.OPTIMIZATION.WARMUP_EPOCH == 0)
+    cfg.OPTIMIZATION.GRAD_NORM_CLIP = params["opt_grad_norm_clip"]
     
 def load_config(cfg_file, epochs=None):
     cfg = pcdet.config.cfg
@@ -39,8 +77,7 @@ def create_loaders(cfg, logger, split_name, batch_size=1, workers=1, epochs=0, n
         dist=False,
         workers=workers,
         logger=logger,
-        # training=(split_name in ["train", "val"]) and not no_shuffle,
-        training= split_name=="train",
+        training=(split_name in ["train", "val"]) and not no_shuffle,
         total_epochs=epochs,
         seed=2345212,
         split=split_name

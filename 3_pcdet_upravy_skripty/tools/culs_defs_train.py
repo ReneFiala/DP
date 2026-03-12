@@ -9,11 +9,13 @@ import train_utils.train_utils as train_utils
 def train_model(cfg, model, optimizer, lr_normal_scheduler, lr_warmup_scheduler,
           logger, train_data, val_data=None, test_data=None,
           train_eval_func=None, val_eval_func=None, test_eval_func=None,
-          epoch_callbacks=None, train_callbacks=None):
+          epoch_callbacks=None, train_callbacks=None, epochs_per_eval=1):
     if epoch_callbacks is None:
         epoch_callbacks = []
     if train_callbacks is None:
         train_callbacks = []
+    if epochs_per_eval < 1:
+        raise ValueError(f"epochs_per_eval must be a positive non-zero integer, got {epochs_per_eval}.")
     type_check(callbacks.CulsCallback, epoch_callbacks)
     type_check(callbacks.CulsCallback, train_callbacks)
     train_func = pcdet.models.model_fn_decorator() # I have no clue
@@ -38,12 +40,12 @@ def train_model(cfg, model, optimizer, lr_normal_scheduler, lr_warmup_scheduler,
         tr_dur = tr_time - start_time
         
         # val eval
-        if train_eval_func:
+        if train_eval_func and current_epoch % epochs_per_eval == 0:
             epoch_train_result, epoch_train_metrics = train_eval_func(cfg, model, train_data.loader)
             epoch_train_metrics["epoch_time"] = tr_dur
         else:
             epoch_train_result, epoch_train_metrics = {}, {}
-        if val_eval_func:
+        if val_eval_func and current_epoch % epochs_per_eval == 0:
             epoch_val_result, epoch_val_metrics = val_eval_func(cfg, model, val_data.loader)
             epoch_val_metrics["epoch_time"] = tr_dur
         else:

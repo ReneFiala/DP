@@ -54,8 +54,10 @@ def main(cfg_path, data_path, epochs, out_path, es_patience, es_warmup, es_obj, 
     )
     end_callbacks.append(
         callbacks.CsvMetricsCallback(out_path, append=False))
+    """
     end_callbacks.append(
         callbacks.SaveLastCheckpointCallback(out_path + "/latest"))
+    """
     
     # Pickle metrics callback
     pickle_cb = callbacks.PickleMetricsCallback(out_path)
@@ -105,14 +107,15 @@ def parse_args():
         args.augs = args.augs[0].split("@")
     return args
 
+args = parse_args()
+#print(args.dataset)
+#print(args.output)
 
-if __name__ == "__main__":
-    args = parse_args()
-    if args.gpu >= 0:
-        gpu_id = args.gpu % torch.cuda.device_count()
-        torch.cuda.set_device(gpu_id)
-        if args.gpu >= torch.cuda.device_count():
-            print(f"GPU ID {args.gpu} out of range {torch.cuda.device_count()}; rolling over to {gpu_id}.")
-    else:
-        print("Invalid GPU ID. Using 0.")
-    main(args.config, args.dataset, args.epochs, args.output, args.es_patience, args.es_warmup, args.es_objective, args.batch_size, args.augs, args.aug_val, args.epochs_per_eval)
+if args.gpu >= 0:
+    gpu_id = args.gpu % torch.cuda.device_count()
+    torch.cuda.set_device(gpu_id)
+    if args.gpu >= torch.cuda.device_count():
+        print(f"GPU ID {args.gpu} out of range {torch.cuda.device_count()}; rolling over to {gpu_id}.")
+else:
+    print("Invalid GPU ID. Using 0.")
+main(args.config, args.dataset, args.epochs, args.output, args.es_patience, args.es_warmup, args.es_objective, args.batch_size, args.augs, args.aug_val, args.epochs_per_eval)
