@@ -1,0 +1,2 @@
+x,y,average_surface_angle,canopy_depth,corrected_height,hull_area,hull_ax_ratio,hull_circumference,hull_max_width,leaf_area,max_height,number_of_segments,projected_leaf_area,voxel_volume,digital_biomass,leaf_inclination,leaf_area_index,hull_coverage
+1,1,55.9502,151.225,193.862,189122,65.653,1661.07,628.956,38180.6,217.399,1,31635,14559,7.40176e+06,1.20691,0.201884,16.7273

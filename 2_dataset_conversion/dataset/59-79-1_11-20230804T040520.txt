@@ -1,0 +1,8 @@
+163.5 -52.51 -65.77 109.3 181.47 92.79 0 SegmentationPlant
+158.11 98.04 -63.61 130.66 150.49 106.25 0 SegmentationPlant
+-119.01 124.56 -56.93 148.69 150.49 96.17 0 SegmentationPlant
+96.04 137.23 -40.64 151.48 125.45 90.44 0 SegmentationPlant
+5.31 123.97 -37.22 165.95 151.96 136.0 0 SegmentationPlant
+59.15 -14.96 -15.44 178.23 149.89 208.65 0 SegmentationPlant
+-46.29 -95.04 -56.33 169.22 111.04 95.71 0 SegmentationPlant
+-104.89 -40.17 -39.96 165.26 180.35 116.49 0 SegmentationPlant
