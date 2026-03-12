@@ -162,7 +162,7 @@ def process_files(args, df):
         if args.colors:
             colors = np.asarray(cloud.colors)
             points = np.concatenate((points, colors), axis=1)
-        elif args.luminance:
+        elif args.luma:
             luma = np.asarray(cloud.colors).transpose()
             luma = LUMA_WEIGHTS.dot(luma)
             points = np.concatenate((points, luma), axis=1)
