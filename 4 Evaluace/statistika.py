@@ -34,8 +34,8 @@ def load_method(name: str, metric: str) -> list:
         for v in range(5):
             if t == v:
                 continue
-            # df = pd.read_csv(ROOT / f"{name}-t{t}-v{v}" / "aver_counts.csv", sep=";")
-            df = pd.read_csv(ROOT / f"{name}-t{t}-v{v}" / "log_test.csv", sep=";")
+            df = pd.read_csv(ROOT / f"{name}-t{t}-v{v}" / "aver_counts.csv", sep=";")
+            # df = pd.read_csv(ROOT / f"{name}-t{t}-v{v}" / "log_test.csv", sep=";")
             suboutput.append(df[metric][0])
         output.append(suboutput)
     return output
@@ -335,9 +335,13 @@ def add_sheet(workbook, title, df, tukey):
     ws.conditional_formatting.add(f'B2:E{rows}', xl.formatting.rule.CellIsRule(
         operator="lessThan", formula=[f'{TESTS_ALPHA}'], fill=red_fill)
     )
+    ws.conditional_formatting.add(f'G2:G{rows}', xl.formatting.rule.CellIsRule(
+        operator="greaterThan", formula=['0'], fill=red_fill)
+    )
     
     
-    for col, start in zip(['E', 'F', 'G', 'H', 'J'], ['num', 'num', 'num', 'percentile', 'percentile']):
+    #for col, start in zip(['E', 'F', 'G', 'H', 'J'], ['num', 'num', 'num', 'percentile', 'percentile']):
+    for col, start in zip(['E', 'F', 'H', 'J'], ['num', 'num', 'percentile', 'percentile']):
         ws.conditional_formatting.add(
             f'{col}2:{col}{len(data)}',
             xl.formatting.rule.ColorScaleRule(
@@ -391,16 +395,7 @@ def add_sheet(workbook, title, df, tukey):
         last_row += len(app)
 
 # result = calc_and_save(["ap_sum_0.3"], "./stats_pyxl_4.xlsx")
-# calc_and_save(["ap_sum_0.3", "ap_avg_0.3", "ap_sum_0.5", "ap_avg_0.5", "loss"], "./detailed_results/11-18-2/main.xlsx")
-# calc_and_save(["armse", "amae", "arsq"], "./detailed_results/11-18-2/avers.xlsx")
-# calc_and_save_csv(["ap_sum_0.3", "ap_avg_0.3", "ap_sum_0.5", "ap_avg_0.5", "loss"], "./detailed_results/11-18-2/")
-# calc_and_save(["rsq", "rmse", "mae"], "./stats_count.xlsx")
-# calc_and_save(["rsq"], "./detailed_results/prezentace_rsq.xlsx")
-# calc_and_save(["arsq"], "./detailed_results/prezentace_counts.xlsx")
-calc_and_save(["ap_sum_0.3", "ap_avg_0.3", "fscore_sum_0.3", "fscore_avg_0.3",
-               "ap_sum_0.5", "ap_avg_0.5", "fscore_sum_0.5", "fscore_avg_0.5"], "./detailed_results/prezentace.xlsx")
-
-#%%
-
-# for k, v in zip(x['tests']['Split\nmethod'], x['tukey']):
-#     np.savetxt(f"./tukey_{k}.csv", v, fmt="%.4f", delimiter=",")
+# calc_and_save(["ap_sum_0.3", "ap_avg_0.3", "fscore_sum_0.3", "fscore_avg_0.3",
+#                "ap_sum_0.5", "ap_avg_0.5", "fscore_sum_0.5", "fscore_avg_0.5"], "./detailed_results/prezentace_001.xlsx")
+# calc_and_save(["mae", "rmse", "rsq", "loss"], "./detailed_results/prezentace_count_loss001.xlsx")
+calc_and_save(["amae", "armse", "arsq"], "./detailed_results/prezentace_av_count001.xlsx")
