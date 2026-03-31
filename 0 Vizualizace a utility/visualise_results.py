@@ -194,12 +194,10 @@ def main():
     
     num_samples = get_pkl_len(result_file) if limit_samples is None else limit_samples
     for i in range(num_samples):
-        i = 36
         geos, file_id = create_geos(i)
         if geos is None:
             continue
         display(geos, file_id, i)
-        break
       
 if __name__ == "__main__":
     main()
