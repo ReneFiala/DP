@@ -1,6 +1,6 @@
-**Kód, data a výsledky k diplomové práci Metody rozdělení datových souborů pro strojové učení.**
+***Kód, data a výsledky k diplomové práci Metody rozdělení datových souborů pro strojové učení.***
 
-**0 Vizualizace a utility** 
+**0 Vizualizace a utility**  
 Obsahuje několik vizualizačních skriptů.
 
 **1 Cross-validace**  
