@@ -10,7 +10,8 @@ Obsahuje potřebná vstupní data (metadata) a skripty pro tvorbu CV sad dle cus
 Obsahuje potřebná vstupní data (dataset, vypočtené CV sady) a skripty pro převod datového souboru a zadaných CV sad do datasetů ve formátu přijímaných frameworkem OpenPCDet.
 
 **3 OpenPCDet upravy a skripty**  
-Obsahuje úpravy frameworku OpenPCDet a trénovací a evaluační skripty.
+Obsahuje úpravy frameworku OpenPCDet a trénovací a evaluační skripty.  
+Složka `pcdet/` Obsahuje kód třetích stran.
 
 **4 Evaluace**  
 Obsahuje potřebná vstupní data (výsledky evaluace detekčních modelů na testovací sadě) a skripty pro výpočet statistických testů variabilit metrik. Obsaženy jsou i předvypočtené výsledky.
@@ -25,5 +26,5 @@ Obsahuje potřebná vstupní data (výsledky evaluace detekčních modelů na te
 * statsmodels
 * openpyxl
 
-Vytvořil René Fiala  
+Vytvořil Bc. René Fiala  
 © 2026 ČZU v Praze
